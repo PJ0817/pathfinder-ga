@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder Georgia - Official Statewide Education & Career Directory</title>
+    <style>
+        :root {
+            --ga-red: #BA0C2F;
+            --ga-black: #101820;
+            --ga-gold: #C28E0E;
+            --ga-light: #F4F5F7;
+            --white: #FFFFFF;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--ga-light); color: var(--ga-black); line-height: 1.6; }
+        header { background: linear-gradient(135deg, var(--ga-black), var(--ga-red)); color: var(--white); padding: 2rem 1rem; text-align: center; border-bottom: 5px solid var(--ga-gold); }
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        header p { font-size: 1.1rem; opacity: 0.9; max-width: 700px; margin: 0 auto; }
+        
+        .nav-tabs { display: flex; justify-content: center; background: var(--white); box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; padding: 0.5rem; }
+        .nav-tab { padding: 0.75rem 1.25rem; margin: 0 4px; cursor: pointer; font-weight: 700; color: #555; border: none; background: transparent; border-radius: 6px; transition: all 0.2s; }
+        .nav-tab:hover { background: #f0f0f0; color: var(--ga-red); }
+        .nav-tab.active { background: var(--ga-red); color: var(--white); }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; min-height: 500px; }
+        .panel { display: none; background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .panel.active { display: block; }
+        
+        h2 { margin-bottom: 1.5rem; color: var(--ga-black); font-size: 1.75rem; border-bottom: 2px solid var(--ga-light); padding-bottom: 0.5rem; }
+        .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .filters input, .filters select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.25rem; max-height: 700px; overflow-y: auto; padding-right: 5px; }
+        .card { background: var(--white); border: 1px solid #e1e4e8; border-top: 4px solid var(--ga-red); border-radius: 8px; padding: 1.25rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--ga-black); }
+        .card p { font-size: 0.9rem; color: #555; margin-bottom: 0.5rem; }
+        
+        .pipeline-links { margin: 0.75rem 0; padding: 0.5rem; background: #fafbfc; border-radius: 6px; border: 1px solid #eaecef; }
+        .pipeline-links strong { font-size: 0.85rem; color: #333; display: block; margin-bottom: 0.3rem; }
+        .link-pill { display: inline-block; background: #eef2f7; color: var(--ga-black); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-decoration: none; margin: 2px; transition: background 0.2s; }
+        .link-pill:hover { background: var(--ga-red); color: var(--white); }
+
+        .calc-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media(max-width: 768px) { .calc-box { grid-template-columns: 1fr; } }
+        .calc-result { background: #fdf8f8; border: 1px solid #f5c6cb; border-radius: 8px; padding: 1.5rem; }
+        .calc-result h4 { color: var(--ga-red); margin-bottom: 1rem; font-size: 1.25rem; }
+        .calc-result ul { list-style: none; padding-left: 0; }
+        .calc-result li { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        
+        .loading { text-align: center; padding: 2rem; font-weight: 600; color: #777; }
+        footer { text-align: center; padding: 2rem; background: var(--ga-black); color: var(--white); margin-top: 3rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Pathfinder Georgia</h1>
+        <p>Official Statewide Database: Education & Career Pipelines</p>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab(0)">K-12 Public & Charter</button>
+        <button class="nav-tab" onclick="switchTab(1)">Private & Catholic</button>
+        <button class="nav-tab" onclick="switchTab(2)">DECAL Pre-K / Childcare</button>
+        <button class="nav-tab" onclick="switchTab(3)">USG Higher Education</button>
+        <button class="nav-tab" onclick="switchTab(4)">Exhaustive Majors & Careers</button>
+        <button class="nav-tab" onclick="switchTab(5)">Tuition & Financial Aid</button>
+    </div>
+
+    <div class="container">
+
+        <!-- TAB 1: K-12 -->
+        <div class="panel active" id="panel-0">
+            <h2>Georgia K-12 Public & Charter Schools Directory</h2>
+            <div class="filters">
+                <input type="text" id="k12Search" placeholder="Search school name..." oninput="filterK12()">
+            </div>
+            <div id="k12Count" style="margin-bottom: 1rem; font-weight: 600; color: #666;">Loading database records...</div>
+            <div class="card-grid" id="k12Grid"><div class="loading">Loading records from SQLite database...</div></div>
+        </div>
+
+        <!-- TAB 2: PRIVATE -->
+        <div class="panel" id="panel-1">
+            <h2>Georgia Private & Catholic Schools Directory</h2>
+            <div class="filters">
+                <input type="text" id="privateSearch" placeholder="Search private school or city..." oninput="filterPrivate()">
+            </div>
+            <div id="privateCount" style="margin-bottom: 1rem; font-weight: 600; color: #666;">Loading database records...</div>
+            <div class="card-grid" id="privateGrid"><div class="loading">Loading records from SQLite database...</div></div>
+        </div>
+
+        <!-- TAB 3: DECAL -->
+        <div class="panel" id="panel-2">
+            <h2>DECAL Licensed Childcare & Pre-K Providers</h2>
+            <div class="filters">
+                <input type="text" id="decalSearch" placeholder="Search provider or county..." oninput="filterDecal()">
+            </div>
+            <div id="decalCount" style="margin-bottom: 1rem; font-weight: 600; color: #666;">Loading database records...</div>
+            <div class="card-grid" id="decalGrid"><div class="loading">Loading records from SQLite database...</div></div>
+        </div>
+
+        <!-- TAB 4: USG COLLEGES -->
+        <div class="panel" id="panel-3">
+            <h2>University System of Georgia (All 26 Institutions)</h2>
+            <div class="filters">
+                <input type="text" id="usgSearch" placeholder="Search college name or city..." oninput="filterUsg()">
+            </div>
+            <div class="card-grid" id="usgGrid"><div class="loading">Loading institutions...</div></div>
+        </div>
+
+        <!-- TAB 5: CAREERS & MAJORS -->
+        <div class="panel" id="panel-4">
+            <h2>Exhaustive Georgia Majors & Career Pathways</h2>
+            <div class="filters">
+                <input type="text" id="careerSearch" placeholder="Search major, career, or skill..." oninput="filterCareers()">
+            </div>
+            <div class="card-grid" id="careerGrid"><div class="loading">Loading pathways...</div></div>
+        </div>
+
+        <!-- TAB 6: TUITION CALCULATOR -->
+        <div class="panel" id="panel-5">
+            <h2>USG Tuition & Financial Aid Calculator</h2>
+            <div class="calc-box">
+                <div>
+                    <p style="margin-bottom: 1rem;">Select a University System of Georgia institution to instantly calculate net cost after Georgia's Zell Miller, HOPE, and Federal Pell Grant awards.</p>
+                    <div class="filters" style="grid-template-columns: 1fr;">
+                        <select id="calcCollege" onchange="runCalculator()">
+                            <option value="">-- Choose USG Institution --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="calc-result" id="calcOutput">
+                    <h4>Select an institution to view financial breakdown.</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Pathfinder Georgia | Powered by Flask, SQLite, & Statewide CSV Data</p>
+    </footer>
+
+    <script>
+        let k12Data = [], privateData = [], decalData = [], usgData = [], careerData = [];
+
+        async function loadData() {
+            try {
+                const [k12Res, privRes, decalRes, usgRes, careerRes] = await Promise.all([
+                    fetch('/api/k12').then(res => res.json()),
+                    fetch('/api/private').then(res => res.json()),
+                    fetch('/api/decal').then(res => res.json()),
+                    fetch('/api/usg').then(res => res.json()),
+                    fetch('/api/careers').then(res => res.json())
+                ]);
+
+                k12Data = k12Res;
+                privateData = privRes;
+                decalData = decalRes;
+                usgData = usgRes;
+                careerData = careerRes;
+
+                filterK12();
+                filterPrivate();
+                filterDecal();
+                filterUsg();
+                filterCareers();
+                setupCalculator();
+            } catch(e) {
+                console.error("Error loading data:", e);
+            }
+        }
+
+        function switchTab(index) {
+            document.querySelectorAll('.nav-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
+            document.querySelectorAll('.panel').forEach((panel, i) => panel.classList.toggle('active', i === index));
+        }
+
+        function filterK12() {
+            const search = document.getElementById('k12Search').value.toLowerCase();
+            const filtered = k12Data.filter(item => item.name.toLowerCase().includes(search) || (item.county && item.county.toLowerCase().includes(search)));
+            document.getElementById('k12Count').innerText = `Showing ${filtered.length.toLocaleString()} matching public schools`;
+            document.getElementById('k12Grid').innerHTML = filtered.slice(0, 200).map(item => `
+                <div class="card">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p><strong>Type:</strong> ${item.school_type || 'Public'} | <strong>County:</strong> ${item.county || 'GA'}</p>
+                        <p><strong>Grades:</strong> ${item.grades || 'N/A'} | <strong>Students:</strong> ${(item.total_students || 0).toLocaleString()}</p>
+                    </div>
+                    <a href="${item.website}" target="_blank" class="btn">Official Website ↗</a>
+                </div>
+            `).join('') + (filtered.length > 200 ? '<p style="grid-column: 1/-1; text-align:center; padding:1rem; color:#777;">Showing first 200 matches. Narrow your search for specific schools.</p>' : '');
+        }
+
+        function filterPrivate() {
+            const search = document.getElementById('privateSearch').value.toLowerCase();
+            const filtered = privateData.filter(item => item.name.toLowerCase().includes(search) || (item.city && item.city.toLowerCase().includes(search)));
+            document.getElementById('privateCount').innerText = `Showing ${filtered.length.toLocaleString()} matching private schools`;
+            document.getElementById('privateGrid').innerHTML = filtered.slice(0, 200).map(item => `
+                <div class="card">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p><strong>Location:</strong> ${item.city || ''}, ${item.county || ''} Co.</p>
+                        <p><strong>Grades:</strong> ${item.grades || 'N/A'} | <strong>Enrollment:</strong> ${(item.total_students || 0).toLocaleString()}</p>
+                    </div>
+                    <a href="${item.website}" target="_blank" class="btn">Official Website ↗</a>
+                </div>
+            `).join('');
+        }
+
+        function filterDecal() {
+            const search = document.getElementById('decalSearch').value.toLowerCase();
+            const filtered = decalData.filter(item => item.title.toLowerCase().includes(search) || (item.county && item.county.toLowerCase().includes(search)) || (item.city && item.city.toLowerCase().includes(search)));
+            document.getElementById('decalCount').innerText = `Showing ${filtered.length.toLocaleString()} licensed providers`;
+            document.getElementById('decalGrid').innerHTML = filtered.slice(0, 200).map(item => `
+                <div class="card">
+                    <div>
+                        <h3>${item.title}</h3>
+                        <p><strong>Location:</strong> ${item.city || ''}, ${item.county || ''} Co. | <strong>Phone:</strong> ${item.phone || 'N/A'}</p>
+                        <p><strong>Program:</strong> ${item.program_type || 'Childcare'} | <span style="color:var(--ga-red); font-weight:600;">${item.caps_subsidized ? '✓ CAPS Subsidized' : 'Standard'}</span></p>
+                    </div>
+                    <a href="${item.website}" target="_blank" class="btn">DECAL Provider Page ↗</a>
+                </div>
+            `).join('');
+        }
+
+        function filterUsg() {
+            const search = document.getElementById('usgSearch').value.toLowerCase();
+            const filtered = usgData.filter(item => item.name.toLowerCase().includes(search) || item.city.toLowerCase().includes(search));
+            document.getElementById('usgGrid').innerHTML = filtered.map(item => `
+                <div class="card">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p><strong>Category:</strong> ${item.category} (${item.city}, GA)</p>
+                        <p><strong>Annual Tuition:</strong> $${item.annual_tuition.toLocaleString()} | <strong>Fees:</strong> $${item.annual_fees.toLocaleString()}</p>
+                    </div>
+                    <a href="${item.website}" target="_blank" class="btn">Visit Institution ↗</a>
+                </div>
+            `).join('');
+        }
+
+        function filterCareers() {
+            const search = document.getElementById('careerSearch').value.toLowerCase();
+            const filtered = careerData.filter(item => item.title.toLowerCase().includes(search) || item.category.toLowerCase().includes(search));
+            document.getElementById('careerGrid').innerHTML = filtered.map(item => {
+                const linksHtml = item.links.map(l => `<a href="${l.url}" target="_blank" class="link-pill">${l.name} ↗</a>`).join('');
+                return `
+                    <div class="card">
+                        <div>
+                            <h3>${item.title}</h3>
+                            <p><strong>Category:</strong> ${item.category}</p>
+                            <p><strong>Avg GA Salary:</strong> <span style="color:green; font-weight:700;">$${item.avg_ga_salary.toLocaleString()}/yr</span></p>
+                            <div class="pipeline-links">
+                                <strong>Top University Pipelines:</strong>
+                                ${linksHtml}
+                            </div>
+                            <p style="margin-top: 0.5rem;"><strong>Key Certification:</strong> ${item.key_credential}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupCalculator() {
+            const calcSelect = document.getElementById('calcCollege');
+            calcSelect.innerHTML = '<option value="">-- Choose USG Institution --</option>' + usgData.map((c, i) => `<option value="${i}">${c.name} (${c.city})</option>`).join('');
+        }
+
+        function runCalculator() {
+            const idx = document.getElementById('calcCollege').value;
+            const output = document.getElementById('calcOutput');
+            if(idx === "") {
+                output.innerHTML = `<h4>Select an institution to view financial breakdown.</h4>`;
+                return;
+            }
+            const col = usgData[idx];
+            const totalBill = col.annual_tuition + col.annual_fees;
+            const zellOutOfPocket = col.annual_fees;
+            const hopeCoverage = Math.round(col.annual_tuition * 0.88);
+            const hopeOutOfPocket = totalBill - hopeCoverage;
+            const pellMax = 7395;
+            const zellPellNet = Math.max(0, totalBill - col.annual_tuition - pellMax) + col.annual_fees;
+            const hopePellNet = Math.max(0, totalBill - hopeCoverage - pellMax);
+
+            output.innerHTML = `
+                <h4>Financial Breakdown: ${col.name}</h4>
+                <ul>
+                    <li><strong>Base Annual Tuition:</strong> $${col.annual_tuition.toLocaleString()}</li>
+                    <li><strong>Mandatory Fees:</strong> $${col.annual_fees.toLocaleString()}</li>
+                    <li><strong>Total Sticker Price:</strong> <strong>$${totalBill.toLocaleString()}</strong></li>
+                    <hr style="margin: 0.75rem 0; border:0; border-top:1px solid #f5c6cb;">
+                    <li><strong>With Zell Miller Scholarship (100% Tuition):</strong> Net Out-of-Pocket = <span style="color:var(--ga-red); font-weight:700;">$${zellOutOfPocket.toLocaleString()}</span>/yr</li>
+                    <li><strong>With HOPE Scholarship (~88% Tuition):</strong> Net Out-of-Pocket = <span style="color:var(--ga-red); font-weight:700;">$${hopeOutOfPocket.toLocaleString()}</span>/yr</li>
+                    <li><strong>With Zell Miller + Max Pell ($7,395):</strong> Net Cost = <span style="color:green; font-weight:700;">$${zellPellNet.toLocaleString()}</span>/yr</li>
+                    <li><strong>With HOPE + Max Pell ($7,395):</strong> Net Cost = <span style="color:green; font-weight:700;">$${hopePellNet.toLocaleString()}</span>/yr</li>
+                </ul>
+            `;
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
